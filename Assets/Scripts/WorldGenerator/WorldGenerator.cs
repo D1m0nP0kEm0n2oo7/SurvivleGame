@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 public class TerrainGenerator : MonoBehaviour
 {
@@ -8,14 +9,13 @@ public class TerrainGenerator : MonoBehaviour
 
     [Header("Настройки генерации биомов")]
     [SerializeField] private Biome[] _biomes;
-    [SerializeField] private int _numCells = 10;
+    [SerializeField] private int _numCells = 20;
     [SerializeField] private int _seed = 0;
 
     [Header("Спавн объектов")]
     [SerializeField] private bool _spawnWorldObjects = true;
-    [SerializeField] private float _perlinNoisestep = 5.0f;
-    [SerializeField] private float _perlinNoiseScale = 0.1f;
-    [SerializeField] private float _perlinNoiseThreshold = 0.5f;
+    [SerializeField] private float _perlinNoisestep = 2.0f;
+    [SerializeField] private float _perlinNoiseScale = 35f;
 
     private Random.State _defaultState;
 
@@ -41,7 +41,7 @@ public class TerrainGenerator : MonoBehaviour
             _terrain.name = "GeneratedTerrain";
             _terrainTransform = terrainGO.transform;
         }
-        else 
+        else
         {
             for (int i = _terrainTransform.childCount - 1; i >= 0; i--)
             {
@@ -153,29 +153,27 @@ public class TerrainGenerator : MonoBehaviour
         float offsetZ = Random.Range(0f, 1f);
         Debug.Log($"offsetX = {offsetX}, offsetZ = {offsetZ}");
 
-        // Проходим по всей площади террейна
+        // Для временного списка кандидатов (чтобы не аллоцировать каждый раз, можно вынести, но для простоты оставим так)
+        List<GameObject> candidates = new List<GameObject>();
+
         for (float x = 0; x < terrainSize; x += _perlinNoisestep)
         {
             for (float z = 0; z < terrainSize; z += _perlinNoisestep)
             {
-                // 1. Вычисляем единый шум Перлина для этой точки
+                // 1. Шум Перлина
                 float normX = x / terrainSize;
                 float normZ = z / terrainSize;
 
-                float noiseX = (normX + offsetX) * _perlinNoiseScale; 
+                float noiseX = (normX + offsetX) * _perlinNoiseScale;
                 float noiseZ = (normZ + offsetZ) * _perlinNoiseScale;
                 float noiseValue = Mathf.PerlinNoise(noiseX, noiseZ);
 
-                // 2. Если шум НЕ превышает порог — пропускаем
-                if (noiseValue <= _perlinNoiseThreshold) continue;
-
-                // 3. Определяем биом в этой точке по карте Вороного
+                // 2. Биом по Вороному
                 int alphaZ = Mathf.FloorToInt(normZ * alphaRes);
                 int alphaX = Mathf.FloorToInt(normX * alphaRes);
                 alphaZ = Mathf.Clamp(alphaZ, 0, alphaRes - 1);
                 alphaX = Mathf.Clamp(alphaX, 0, alphaRes - 1);
 
-                // Находим доминирующий биом
                 float maxWeight = 0f;
                 int dominantBiome = -1;
                 for (int b = 0; b < _biomes.Length; b++)
@@ -192,39 +190,30 @@ public class TerrainGenerator : MonoBehaviour
                 Biome biome = _biomes[dominantBiome];
                 if (biome.worldObjects == null) continue;
 
-                WorldObject spawnObject = ChoseWoroldObject(biome);
-                if (spawnObject.prefab == null) continue;
-
-                Vector3 spawnPos = new Vector3(terrainTransform.position.x + x, 0, terrainTransform.position.z + z);
-                Instantiate(spawnObject.prefab, spawnPos, Quaternion.identity, terrainTransform);
-                }
-            }  
-        }
-    
-    private WorldObject ChoseWoroldObject(Biome biome)
-    {
-        WorldObject[] available = biome.worldObjects;
-        if (available != null && available.Length > 0)
-        {
-            float totalWeight = 0f;
-            foreach (var obj in available) totalWeight += obj.spawnChance;
-
-            if (totalWeight > 0f) // если есть хоть какой-то вес
-            {
-                float randomPoint = Random.value * totalWeight;
-                float cumulative = 0f;
-                WorldObject chosen = null;
-                foreach (var obj in available)
+                // 3. Собираем объекты, прошедшие персональный порог
+                candidates.Clear();
+                foreach (WorldObject worldObj in biome.worldObjects)
                 {
-                    cumulative += obj.spawnChance;
-                    if (randomPoint <= cumulative)
+                    if (worldObj.prefab == null) continue;
+
+                    float threshold = 1f - worldObj.spawnChance;
+                    if (noiseValue > threshold)
                     {
-                        chosen = obj;
-                        return chosen;
+                        candidates.Add(worldObj.prefab);
                     }
+                }
+
+                // 4. Если есть кандидаты — спавним одного случайного
+                if (candidates.Count > 0)
+                {
+                    GameObject chosen = candidates[Random.Range(0, candidates.Count)];
+                    Vector3 spawnPos = new Vector3(
+                        terrainTransform.position.x + x,
+                        0,
+                        terrainTransform.position.z + z);
+                    Instantiate(chosen, spawnPos, Quaternion.identity, terrainTransform);
                 }
             }
         }
-        return biome.worldObjects[0];
     }
 }
