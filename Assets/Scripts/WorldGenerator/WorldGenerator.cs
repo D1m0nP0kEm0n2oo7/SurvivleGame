@@ -187,27 +187,19 @@ public class TerrainGenerator : MonoBehaviour
                         dominantBiome = b;
                     }
                 }
-
                 if (dominantBiome < 0) continue;
 
                 Biome biome = _biomes[dominantBiome];
                 if (biome.worldObjects == null) continue;
 
-                // 4. Спавним объекты этого биома с проверкой их шанса
-                foreach (WorldObject worldObj in biome.worldObjects)
-                {
-                    if (worldObj.prefab == null) continue;
+                WorldObject spawnObject = ChoseWoroldObject(biome);
+                if (spawnObject.prefab == null) continue;
 
-                    // Дополнительная проверка шанса спавна
-                    if (Random.value < worldObj.spawnChance)
-                    {
-                        Vector3 spawnPos = new Vector3(terrainTransform.position.x + x, 0, terrainTransform.position.z + z);
-                        Instantiate(worldObj.prefab, spawnPos, Quaternion.identity, terrainTransform);
-                    }
+                Vector3 spawnPos = new Vector3(terrainTransform.position.x + x, 0, terrainTransform.position.z + z);
+                Instantiate(spawnObject.prefab, spawnPos, Quaternion.identity, terrainTransform);
                 }
             }  
         }
-    }
     
     private WorldObject ChoseWoroldObject(Biome biome)
     {
