@@ -208,4 +208,31 @@ public class TerrainGenerator : MonoBehaviour
             }  
         }
     }
+    
+    private WorldObject ChoseWoroldObject(Biome biome)
+    {
+        WorldObject[] available = biome.worldObjects;
+        if (available != null && available.Length > 0)
+        {
+            float totalWeight = 0f;
+            foreach (var obj in available) totalWeight += obj.spawnChance;
+
+            if (totalWeight > 0f) // если есть хоть какой-то вес
+            {
+                float randomPoint = Random.value * totalWeight;
+                float cumulative = 0f;
+                WorldObject chosen = null;
+                foreach (var obj in available)
+                {
+                    cumulative += obj.spawnChance;
+                    if (randomPoint <= cumulative)
+                    {
+                        chosen = obj;
+                        return chosen;
+                    }
+                }
+            }
+        }
+        return biome.worldObjects[0];
+    }
 }
