@@ -17,13 +17,13 @@ MonoBehaviour:
   worldObjects:
   - prefab: {fileID: 919132149155446097, guid: 6e53c6c3ddbe6fe4685b84080f2c4b07, type: 3}
     spawnChance: 0.3
-  - prefab: {fileID: 919132149155446097, guid: 38c46a43abe25944dadb9f4c8eb270aa, type: 3}
-    spawnChance: 0.1
   - prefab: {fileID: 919132149155446097, guid: 54a00edc951f4114abcaf90a3585e8a5, type: 3}
-    spawnChance: 0.1
+    spawnChance: 0.3
+  - prefab: {fileID: 919132149155446097, guid: 38c46a43abe25944dadb9f4c8eb270aa, type: 3}
+    spawnChance: 0.25
   - prefab: {fileID: 919132149155446097, guid: 37d2b99af6d39444a89d8d25a35c1151, type: 3}
-    spawnChance: 0.02
+    spawnChance: 0.25
   - prefab: {fileID: 919132149155446097, guid: 3d41a57189f26ac478970a8214a03598, type: 3}
-    spawnChance: 0.01
+    spawnChance: 0.22
   - prefab: {fileID: 919132149155446097, guid: 1ced969222a385e458ab084a6d5529d0, type: 3}
-    spawnChance: 0.24
+    spawnChance: 0.2

@@ -16,6 +16,6 @@ MonoBehaviour:
   terrainLayer: {fileID: 8574412962073106934, guid: 99dc421592d4bf7448f291d70e4d7eca, type: 2}
   worldObjects:
   - prefab: {fileID: 919132149155446097, guid: d84b05658c664c946a7e1437ae611388, type: 3}
-    spawnChance: 0.9
+    spawnChance: 0.45
   - prefab: {fileID: 919132149155446097, guid: fccbe1607b05815429c61d9d54175c22, type: 3}
-    spawnChance: 0.5
+    spawnChance: 0.2
