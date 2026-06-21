@@ -1,5 +1,5 @@
 [System.Serializable]
-public class Object
+public class ObjectData
 {
     public int ID;
     public float PosX;

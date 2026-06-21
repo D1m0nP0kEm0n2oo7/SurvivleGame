@@ -1,5 +1,3 @@
-using UnityEngine.UI;
-
 [System.Serializable]
 
 public class WorldData
@@ -15,5 +13,5 @@ public class WorldData
     public int WorldTimeSec;
     public CharacterData CharacterData;
     public InventoryData InventoryData;
-    public Object[] Objects;
+    public ObjectData[] Objects;
 }
