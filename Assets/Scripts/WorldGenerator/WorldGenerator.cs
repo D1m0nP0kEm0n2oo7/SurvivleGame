@@ -208,10 +208,10 @@ public class TerrainGenerator : MonoBehaviour
                 {
                     GameObject chosen = candidates[Random.Range(0, candidates.Count)];
                     Vector3 spawnPos = new Vector3(
-                        terrainTransform.position.x + x,
+                        terrainTransform.position.x + x + Random.Range(-0.5f, 0.5f),
                         0,
-                        terrainTransform.position.z + z);
-                    Instantiate(chosen, spawnPos, Quaternion.identity, terrainTransform);
+                        terrainTransform.position.z + z + Random.Range(-0.5f, 0.5f));
+                    Instantiate(chosen, spawnPos, Quaternion.Euler(0, Random.Range(-0, 180),0), terrainTransform);
                 }
             }
         }
