@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class SaveManeger : MonoBehaviour
 {
-    [SerializeField] private ISaveble[] _sevebles;
+    [SerializeField] private ISaveble[] _savebles;
 
     private WorldData _worldData;
 
@@ -10,9 +10,9 @@ public class SaveManeger : MonoBehaviour
     {
         _worldData = new WorldData();
 
-        foreach (var se in _sevebles)
+        foreach (var se in _savebles)
         {
-            se.SeveState(_worldData);
+            se.SaveState(_worldData);
         }
         WorldManager.Instance.Save(_worldData);
     }
@@ -21,7 +21,7 @@ public class SaveManeger : MonoBehaviour
     {
         _worldData = WorldManager.Instance.Load();
 
-        foreach (var se in _sevebles)
+        foreach (var se in _savebles)
         {
             se.LoadState(_worldData);
         }

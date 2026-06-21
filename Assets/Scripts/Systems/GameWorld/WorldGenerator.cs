@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-public class TerrainGenerator : MonoBehaviour
+public class TerrainGenerator : MonoBehaviour, ISaveble
 {
     [Header("Настройки Terrain")]
     [SerializeField] private int _terrainSize = 200;
@@ -14,7 +14,7 @@ public class TerrainGenerator : MonoBehaviour
 
     [Header("Спавн объектов")]
     [SerializeField] private bool _spawnWorldObjects = true;
-    [SerializeField] private float _perlinNoisestep = 2.0f;
+    [SerializeField] private float _perlinNoiseStep = 2.0f;
     [SerializeField] private float _perlinNoiseScale = 35f;
 
     private Random.State _defaultState;
@@ -25,12 +25,18 @@ public class TerrainGenerator : MonoBehaviour
 
     private float[,,] _alphamap;
 
-    void Start()
+    private void Start()
     {
         GenerateTerrain();
     }
 
-    public void GenerateTerrain()
+    public void ReGeneration()
+    {
+        _seed = 0;
+        GenerateTerrain();
+    }
+
+    private void GenerateTerrain()
     {
         if (_terrain == null)
         {
@@ -72,7 +78,6 @@ public class TerrainGenerator : MonoBehaviour
             SpawnWorldObjects();
 
         Random.state = _defaultState;
-        _seed = 0;
     }
 
     private TerrainLayer[] GetTerrainLayersFromBiomes()
@@ -156,9 +161,9 @@ public class TerrainGenerator : MonoBehaviour
         // Для временного списка кандидатов (чтобы не аллоцировать каждый раз, можно вынести, но для простоты оставим так)
         List<GameObject> candidates = new List<GameObject>();
 
-        for (float x = 0; x < terrainSize; x += _perlinNoisestep)
+        for (float x = 0; x < terrainSize; x += _perlinNoiseStep)
         {
-            for (float z = 0; z < terrainSize; z += _perlinNoisestep)
+            for (float z = 0; z < terrainSize; z += _perlinNoiseStep)
             {
                 // 1. Шум Перлина
                 float normX = x / terrainSize;
@@ -215,5 +220,23 @@ public class TerrainGenerator : MonoBehaviour
                 }
             }
         }
+    }
+
+    public void SaveState(WorldData data)
+    {
+        data.TerrainSize = _terrainSize;
+        data.AlphamapResolution = _alphamapResolution;
+        data.PerlinNoiseStep = _perlinNoiseStep;
+        data.PerlinNoiseScale = _perlinNoiseScale;
+        data.Seed = _seed;
+    }
+
+    public void LoadState(WorldData data)
+    {
+        _terrainSize = data.TerrainSize;
+        _alphamapResolution = data.AlphamapResolution;
+        _perlinNoiseStep = data.PerlinNoiseStep;
+        _perlinNoiseScale = data.PerlinNoiseScale;
+        _seed = data.Seed;
     }
 }

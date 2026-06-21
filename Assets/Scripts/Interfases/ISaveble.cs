@@ -1,5 +1,6 @@
 public interface ISaveble
 {
-    void SeveState(WorldData data);
+    void SaveState(WorldData data);
     void LoadState(WorldData data);
+    int LoadOrder { get; } //Порядок загрузки;
 }
