@@ -18,7 +18,7 @@ MonoBehaviour:
   - prefab: {fileID: 919132149155446097, guid: 7e1c49ced5350f444ba58dd18e3e0f30, type: 3}
     spawnChance: 0.25
   - prefab: {fileID: 919132149155446097, guid: f2b6b74473b1863468981348ff5dadbb, type: 3}
-    spawnChance: 0.35
+    spawnChance: 0.3
   - prefab: {fileID: 919132149155446097, guid: 6e53c6c3ddbe6fe4685b84080f2c4b07, type: 3}
     spawnChance: 0.15
   - prefab: {fileID: 919132149155446097, guid: d84b05658c664c946a7e1437ae611388, type: 3}
