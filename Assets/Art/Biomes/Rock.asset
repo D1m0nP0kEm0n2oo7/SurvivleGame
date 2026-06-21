@@ -15,15 +15,15 @@ MonoBehaviour:
   biomeName: Rock
   terrainLayer: {fileID: 8574412962073106934, guid: c738084ff14eec24a8ccdac89a39745c, type: 2}
   worldObjects:
-  - prefab: {fileID: 919132149155446097, guid: 6e53c6c3ddbe6fe4685b84080f2c4b07, type: 3}
+  - prefab: {fileID: 1943043039808631958, guid: f996c126459792a438df3eb70abe9c3f, type: 3}
     spawnChance: 0.3
-  - prefab: {fileID: 919132149155446097, guid: 54a00edc951f4114abcaf90a3585e8a5, type: 3}
+  - prefab: {fileID: 6699316505959612234, guid: 1a6dc8987e8d4294f94d2bb075d59616, type: 3}
     spawnChance: 0.3
-  - prefab: {fileID: 919132149155446097, guid: 38c46a43abe25944dadb9f4c8eb270aa, type: 3}
+  - prefab: {fileID: 9144447196234090521, guid: 00960f2d30d22384c97710ef8ae3f182, type: 3}
     spawnChance: 0.25
-  - prefab: {fileID: 919132149155446097, guid: 37d2b99af6d39444a89d8d25a35c1151, type: 3}
+  - prefab: {fileID: 1677724139997858458, guid: 5c45a692d28eddc41a344d8965ed76c7, type: 3}
     spawnChance: 0.25
-  - prefab: {fileID: 919132149155446097, guid: 3d41a57189f26ac478970a8214a03598, type: 3}
+  - prefab: {fileID: 2896806917830805645, guid: 6b350b7f941c10443bab59303bbe1baa, type: 3}
     spawnChance: 0.22
-  - prefab: {fileID: 919132149155446097, guid: 1ced969222a385e458ab084a6d5529d0, type: 3}
+  - prefab: {fileID: 5102377568128005037, guid: 319c11082e41a7f42b393fa0425f84ff, type: 3}
     spawnChance: 0.2
