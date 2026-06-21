@@ -13,7 +13,7 @@ public class WorldManager : MonoBehaviour
         else
             Destroy(this);
 
-        path = Path.Combine(Application.persistentDataPath, "/seves/", "worldSave.json");
+        path = Path.Combine(Application.persistentDataPath, "saves", "worldSave.json");
         Debug.Log(path);
     }
     public void Save(WorldData data)

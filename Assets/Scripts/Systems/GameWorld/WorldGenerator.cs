@@ -25,6 +25,8 @@ public class TerrainGenerator : MonoBehaviour, ISaveble
 
     private float[,,] _alphamap;
 
+    public int LoadPriority => 0;
+
     private void Start()
     {
         GenerateTerrain();
@@ -239,4 +241,6 @@ public class TerrainGenerator : MonoBehaviour, ISaveble
         _perlinNoiseScale = data.PerlinNoiseScale;
         _seed = data.Seed;
     }
+
+
 }
