@@ -924,13 +924,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f32b52aeffe4541459f66c728fc1f961, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WorldGenerator
-  _terrainSize: 1000
-  _alphamapResolution: 512
-  _perlinNoiseStep: 2
-  _perlinNoiseScale: 35
+  _terrainSize: 200
+  _alphamapResolution: 0
+  _perlinNoiseStep: 0
+  _perlinNoiseScale: 0
   _biomes: {fileID: 11400000, guid: f56893ae8286614439c688a3e4ad599e, type: 2}
-  _numCells: 20
-  _seed: 0
+  _numCells: 0
+  _seed: 1
   _objectSpawner: {fileID: 2071175690}
 --- !u!4 &1485634975
 Transform:

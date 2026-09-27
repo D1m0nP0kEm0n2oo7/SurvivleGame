@@ -1,22 +1,30 @@
-﻿using System.Collections.Generic;
+﻿using UnityEditor;
 using UnityEngine;
+
+
 
 public class TerrainGenerator : MonoBehaviour, ISaveble
 {
     [Header("Настройки Terrain")]
-    [SerializeField] private int _terrainSize = 200;
-    [SerializeField] private int _alphamapResolution = 512;
+    [SerializeField] private int _terrainSize;
+    [SerializeField] private int _alphamapResolution;
 
     [Header("Настройки генерации биомов")]
 
-    [SerializeField] private float _perlinNoiseStep = 2.0f;
-    [SerializeField] private float _perlinNoiseScale = 35f;
+    [SerializeField] private float _perlinNoiseStep;
+    [SerializeField] private float _perlinNoiseScale;
     [SerializeField] private BiomeDatabase _biomes;
-    [SerializeField] private int _numCells = 20;
+    [SerializeField] private int _numCells;
     [SerializeField] private int _seed = 0;
 
     [Header("Спавнер обектов")]
     [SerializeField] private WorldObjectSpawner _objectSpawner;
+
+    private const int _baseTerrainSize = 200;
+    private const int _baseAlphamapResolution = 512;
+    private const int _baseNumCells = 20;
+    private const float _basePerlinNoiseStep = 2.0f;
+    private const float _basePerlinNoiseScale = 35f;
 
     private Random.State _defaultState;
     private Terrain _terrain;
@@ -38,8 +46,29 @@ public class TerrainGenerator : MonoBehaviour, ISaveble
         GenerateTerrain();
     }
 
+    private void WorldScaling()
+    {
+        if (_terrainSize <= 0)
+            _terrainSize = _baseTerrainSize;
+
+        float worldScale = (float)_terrainSize / _baseTerrainSize;
+
+        if (_alphamapResolution <= 0)
+            _alphamapResolution = Mathf.RoundToInt(_baseAlphamapResolution * worldScale);
+
+        if (_numCells <= 0)
+            _numCells = Mathf.RoundToInt(_baseNumCells * worldScale);
+
+        if (_perlinNoiseStep <= 0f)
+            _perlinNoiseStep = _basePerlinNoiseStep;
+
+        if (_perlinNoiseScale <= 0f)
+            _perlinNoiseScale = _basePerlinNoiseScale * worldScale;
+    }
+
     private void GenerateTerrain()
     {
+        WorldScaling();
         if (_terrain == null)
         {
 
@@ -152,10 +181,13 @@ public class TerrainGenerator : MonoBehaviour, ISaveble
 
         return alphamap;
     }
+
+
     public void SaveState(WorldData data)
     {
         data.TerrainSize = _terrainSize;
         data.AlphamapResolution = _alphamapResolution;
+        data.NumCells = _numCells;
         data.PerlinNoiseStep = _perlinNoiseStep;
         data.PerlinNoiseScale = _perlinNoiseScale;
         data.Seed = _seed;
@@ -165,8 +197,31 @@ public class TerrainGenerator : MonoBehaviour, ISaveble
     {
         _terrainSize = data.TerrainSize;
         _alphamapResolution = data.AlphamapResolution;
+        _numCells = data.NumCells;
         _perlinNoiseStep = data.PerlinNoiseStep;
         _perlinNoiseScale = data.PerlinNoiseScale;
         _seed = data.Seed;
     }
+
+    [ContextMenu("Generate Terrain")]
+    private void GenerateInEditor()
+    {
+        GenerateTerrain();
+        #if UNITY_EDITOR
+                SaveTerrainDataAsAsset();
+        #endif
+    }
+    #if UNITY_EDITOR
+    private void SaveTerrainDataAsAsset()
+    {
+    string path = $"Assets/GeneratedTerrains/Terrain_{_seed}.asset";
+    System.IO.Directory.CreateDirectory("Assets/GeneratedTerrains");
+
+    AssetDatabase.CreateAsset(_terrainData, path);
+    AssetDatabase.SaveAssets();
+    AssetDatabase.Refresh();
+
+    Debug.Log($"TerrainData saved to {path}");
+    }
+    #endif
 }
