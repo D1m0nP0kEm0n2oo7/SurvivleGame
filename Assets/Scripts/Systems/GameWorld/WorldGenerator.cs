@@ -8,14 +8,17 @@ public class TerrainGenerator : MonoBehaviour, ISaveble
     [SerializeField] private int _alphamapResolution = 512;
 
     [Header("Настройки генерации биомов")]
-    [SerializeField] private Biome[] _biomes;
+
+    [SerializeField] private float _perlinNoiseStep = 2.0f;
+    [SerializeField] private float _perlinNoiseScale = 35f;
+    [SerializeField] private BiomeDatabase _biomes;
     [SerializeField] private int _numCells = 20;
     [SerializeField] private int _seed = 0;
 
-
+    [Header("Спавнер обектов")]
+    [SerializeField] private WorldObjectSpawner _objectSpawner;
 
     private Random.State _defaultState;
-
     private Terrain _terrain;
     private TerrainData _terrainData;
     private Transform _terrainTransform;
@@ -73,26 +76,32 @@ public class TerrainGenerator : MonoBehaviour, ISaveble
         _alphamap = GetAlphaMap();
         _terrainData.SetAlphamaps(0, 0, _alphamap);
 
-        if (_spawnWorldObjects)
-            SpawnWorldObjects();
+        if (_objectSpawner)
+            _objectSpawner.SpawnWorldObjects(_terrain,
+                _terrainData,
+                _alphamap,
+                _biomes.Biomes,
+                _perlinNoiseStep,
+                _perlinNoiseScale
+                );
 
         Random.state = _defaultState;
     }
 
     private TerrainLayer[] GetTerrainLayersFromBiomes()
     {
-        if (_biomes == null || _biomes.Length == 0)
+        if (_biomes.Biomes == null || _biomes.Biomes.Length == 0)
             return new TerrainLayer[0];
 
-        TerrainLayer[] layers = new TerrainLayer[_biomes.Length];
-        for (int i = 0; i < _biomes.Length; i++)
+        TerrainLayer[] layers = new TerrainLayer[_biomes.Biomes.Length];
+        for (int i = 0; i < _biomes.Biomes.Length; i++)
         {
-            if (_biomes[i].terrainLayer == null)
+            if (_biomes.Biomes[i].terrainLayer == null)
             {
-                Debug.LogWarning($"Biome '{_biomes[i].biomeName}' не имеет TerrainLayer!");
+                Debug.LogWarning($"Biome '{_biomes.Biomes[i].biomeName}' не имеет TerrainLayer!");
                 layers[i] = new TerrainLayer();
             }
-            layers[i] = _biomes[i].terrainLayer;
+            layers[i] = _biomes.Biomes[i].terrainLayer;
         }
         return layers;
     }
@@ -100,7 +109,7 @@ public class TerrainGenerator : MonoBehaviour, ISaveble
     private float[,,] GetAlphaMap()
     {
         int alphaRes = _terrainData.alphamapResolution;
-        float[,,] alphamap = new float[alphaRes, alphaRes, _biomes.Length];
+        float[,,] alphamap = new float[alphaRes, alphaRes, _biomes.Biomes.Length];
 
         // Генерация случайных центров и биомов для них
         Vector2[] cellCenters = new Vector2[_numCells];
@@ -108,7 +117,7 @@ public class TerrainGenerator : MonoBehaviour, ISaveble
         for (int i = 0; i < _numCells; i++)
         {
             cellCenters[i] = new Vector2(Random.value, Random.value);
-            cellBiomes[i] = Random.Range(0, _biomes.Length);
+            cellBiomes[i] = Random.Range(0, _biomes.Biomes.Length);
         }
 
         // Для каждой точки альфа-карты находим ближайшее ядро
@@ -136,7 +145,7 @@ public class TerrainGenerator : MonoBehaviour, ISaveble
                 }
 
                 // Устанавливаем вес 1 для выбранного биома, 0 для остальных
-                for (int i = 0; i < _biomes.Length; i++)
+                for (int i = 0; i < _biomes.Biomes.Length; i++)
                     alphamap[z, x, i] = (i == closestBiome) ? 1f : 0f;
             }
         }
@@ -160,6 +169,4 @@ public class TerrainGenerator : MonoBehaviour, ISaveble
         _perlinNoiseScale = data.PerlinNoiseScale;
         _seed = data.Seed;
     }
-
-
 }

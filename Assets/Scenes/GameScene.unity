@@ -787,6 +787,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1485634975}
+  - {fileID: 2071175689}
   m_Father: {fileID: 1152729858}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &769852189
@@ -923,19 +924,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f32b52aeffe4541459f66c728fc1f961, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WorldGenerator
-  _terrainSize: 200
+  _terrainSize: 1000
   _alphamapResolution: 512
-  _biomes:
-  - {fileID: 11400000, guid: 334432668b980204e805a826b2c14071, type: 2}
-  - {fileID: 11400000, guid: e38ed7e49629f6e4682095c1380da0c6, type: 2}
-  - {fileID: 11400000, guid: 4d714fb8a5dc0e443a5d80d2da6836be, type: 2}
-  - {fileID: 11400000, guid: 37acd33be07c61d45a7ddfd79bea793f, type: 2}
-  - {fileID: 11400000, guid: c383d09f430fbf74d9478adf22898af3, type: 2}
-  _numCells: 20
-  _seed: 0
-  _spawnWorldObjects: 1
   _perlinNoiseStep: 2
   _perlinNoiseScale: 35
+  _biomes: {fileID: 11400000, guid: f56893ae8286614439c688a3e4ad599e, type: 2}
+  _numCells: 20
+  _seed: 0
+  _objectSpawner: {fileID: 2071175690}
 --- !u!4 &1485634975
 Transform:
   m_ObjectHideFlags: 0
@@ -1030,6 +1026,50 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2071175688
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2071175689}
+  - component: {fileID: 2071175690}
+  m_Layer: 0
+  m_Name: WorldObjSpawner
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2071175689
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2071175688}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 1, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 769852188}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2071175690
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2071175688}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 762dafeb82ee53a4d864f3550c481c0d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WorldObjectSpawner
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

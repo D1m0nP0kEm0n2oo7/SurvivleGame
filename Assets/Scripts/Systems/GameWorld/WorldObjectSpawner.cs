@@ -3,23 +3,19 @@ using UnityEngine;
 
 public class WorldObjectSpawner : MonoBehaviour
 {
-
-    [SerializeField] private float _perlinNoiseStep = 2.0f;
-    [SerializeField] private float _perlinNoiseScale = 35f;
-
-    public void Spawn(Terrain terrain, float[,,] alphamap, Biome[] biomes)
+    public void SpawnWorldObjects(Terrain terrain, 
+        TerrainData terrainData, 
+        float[,,] alphamap,
+        Biome[] biomes, 
+        float perlinNoiseStep, 
+        float perlinNoiseScale)
     {
-        SpawnWorldObjects(terrain, terrain.terrainData)
-    }
+        if (terrain == null || terrainData == null || alphamap == null) return;
 
-    private void SpawnWorldObjects(Terrain terrain, TerrainData terrainData, )
-    {
-        if (terrain == null || terrainData == null) return;
-
+        
         int alphaRes = terrainData.alphamapResolution;
-        float[,,] alphamap = _alphamap;
-        float terrainSize = terrainSize;
-        Transform terrainTransform = terrainTransform;
+        float terrainSize = terrainData.size.x;
+        Transform terrainTransform = terrain.transform;
 
         float offsetX = Random.Range(0f, 1f);
         float offsetZ = Random.Range(0f, 1f);
@@ -28,16 +24,16 @@ public class WorldObjectSpawner : MonoBehaviour
         // Для временного списка кандидатов (чтобы не аллоцировать каждый раз, можно вынести, но для простоты оставим так)
         List<GameObject> candidates = new List<GameObject>();
 
-        for (float x = 0; x < terrainSize; x += _perlinNoiseStep)
+        for (float x = 0; x < terrainSize; x += perlinNoiseStep)
         {
-            for (float z = 0; z < terrainSize; z += _perlinNoiseStep)
+            for (float z = 0; z < terrainSize; z += perlinNoiseStep)
             {
                 // 1. Шум Перлина
                 float normX = x / terrainSize;
                 float normZ = z / terrainSize;
 
-                float noiseX = (normX + offsetX) * _perlinNoiseScale;
-                float noiseZ = (normZ + offsetZ) * _perlinNoiseScale;
+                float noiseX = (normX + offsetX) * perlinNoiseScale;
+                float noiseZ = (normZ + offsetZ) * perlinNoiseScale;
                 float noiseValue = Mathf.PerlinNoise(noiseX, noiseZ);
 
                 // 2. Биом по Вороному
@@ -48,7 +44,7 @@ public class WorldObjectSpawner : MonoBehaviour
 
                 float maxWeight = 0f;
                 int dominantBiome = -1;
-                for (int b = 0; b < _biomes.Length; b++)
+                for (int b = 0; b < biomes.Length; b++)
                 {
                     float weight = alphamap[alphaZ, alphaX, b];
                     if (weight > maxWeight)
@@ -59,7 +55,7 @@ public class WorldObjectSpawner : MonoBehaviour
                 }
                 if (dominantBiome < 0) continue;
 
-                Biome biome = _biomes[dominantBiome];
+                Biome biome = biomes[dominantBiome];
                 if (biome.worldObjects == null) continue;
 
                 // 3. Собираем объекты, прошедшие персональный порог
@@ -87,4 +83,5 @@ public class WorldObjectSpawner : MonoBehaviour
                 }
             }
         }
-    }
+    } 
+}
