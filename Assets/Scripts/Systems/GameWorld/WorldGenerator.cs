@@ -208,7 +208,11 @@ public class TerrainGenerator : MonoBehaviour, ISaveble
     {
         GenerateTerrain();
         #if UNITY_EDITOR
-                SaveTerrainDataAsAsset();
+            SaveTerrainDataAsAsset();
+            _terrain.Flush();                        // заставляет террейн пересобрать LOD/рендер
+            EditorUtility.SetDirty(_terrainData);    // помечает ассет как изменённый
+            EditorUtility.SetDirty(_terrain);        // и сам GameObject
+            UnityEditor.SceneView.RepaintAll();      // перерисовать Scene view
         #endif
     }
     #if UNITY_EDITOR
