@@ -1,7 +1,7 @@
-﻿using UnityEditor;
-using UnityEngine;
-
-
+﻿using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 public class TerrainGenerator : MonoBehaviour, ISaveble
 {
@@ -10,7 +10,6 @@ public class TerrainGenerator : MonoBehaviour, ISaveble
     [SerializeField] private int _alphamapResolution;
 
     [Header("Настройки генерации биомов")]
-
     [SerializeField] private float _perlinNoiseStep;
     [SerializeField] private float _perlinNoiseScale;
     [SerializeField] private BiomeDatabase _biomes;
@@ -37,13 +36,13 @@ public class TerrainGenerator : MonoBehaviour, ISaveble
 
     private void Start()
     {
-        GenerateTerrain();
+         //GenerateTerrain(false); Не создаем мир при старте, пока
     }
 
     public void ReGeneration()
     {
         _seed = 0;
-        GenerateTerrain();
+        GenerateTerrain(false);
     }
 
     private void WorldScaling()
@@ -66,55 +65,86 @@ public class TerrainGenerator : MonoBehaviour, ISaveble
             _perlinNoiseScale = _basePerlinNoiseScale * worldScale;
     }
 
-    private void GenerateTerrain()
+    private void GenerateTerrain(bool saveAsAsset)
     {
         WorldScaling();
-        if (_terrain == null)
-        {
-
-            GameObject terrainGO = Terrain.CreateTerrainGameObject(new TerrainData());
-            _terrain = terrainGO.GetComponent<Terrain>();
-            _terrain.transform.parent = transform;
-            _terrain.name = "GeneratedTerrain";
-            _terrainTransform = terrainGO.transform;
-        }
-        else
-        {
-            for (int i = _terrainTransform.childCount - 1; i >= 0; i--)
-            {
-                Transform child = _terrainTransform.GetChild(i);
-                DestroyImmediate(child.gameObject);
-            }
-        }
-
-        // Настроить TerrainData
-        _terrainData = _terrain.terrainData;
-        _terrainData.alphamapResolution = _alphamapResolution;
-        _terrainData.size = new Vector3(_terrainSize, 100f, _terrainSize);
 
         if (_seed == 0)
         {
             _seed = Random.Range(int.MinValue, int.MaxValue);
             Debug.Log($"seed = {_seed}");
         }
+
+        if (_terrain == null)
+            _terrain = GetComponentInChildren<Terrain>();
+
+        if (_terrain == null)
+        {
+            GameObject terrainGO = Terrain.CreateTerrainGameObject(new TerrainData());
+            _terrain = terrainGO.GetComponent<Terrain>();
+            _terrain.transform.parent = transform;
+            _terrain.name = "GeneratedTerrain";
+        }
+        _terrainTransform = _terrain.transform;
+
+        for (int i = _terrainTransform.childCount - 1; i >= 0; i--)
+            DestroyImmediate(_terrainTransform.GetChild(i).gameObject);
+
+        _terrainData = CreateTerrainData(saveAsAsset);
+        _terrainData.alphamapResolution = _alphamapResolution;
+        _terrainData.size = new Vector3(_terrainSize, 100f, _terrainSize);
+
+        _terrain.terrainData = _terrainData;
+        var terrainCollider = _terrain.GetComponent<TerrainCollider>();
+        if (terrainCollider != null)
+            terrainCollider.terrainData = _terrainData;
+
         _defaultState = Random.state;
         Random.InitState(_seed);
 
         _terrainData.terrainLayers = GetTerrainLayersFromBiomes();
 
         _alphamap = GetAlphaMap();
-        _terrainData.SetAlphamaps(0, 0, _alphamap);
+        ApplyAlphamap();
 
         if (_objectSpawner)
-            _objectSpawner.SpawnWorldObjects(_terrain,
-                _terrainData,
-                _alphamap,
-                _biomes.Biomes,
-                _perlinNoiseStep,
-                _perlinNoiseScale
-                );
+            _objectSpawner.SpawnWorldObjects(_terrain, _terrainData, _alphamap,
+                _biomes.Biomes, _perlinNoiseStep, _perlinNoiseScale);
 
         Random.state = _defaultState;
+
+        _terrainData.terrainLayers = GetTerrainLayersFromBiomes();
+        ApplyAlphamap();
+
+#if UNITY_EDITOR
+        if (saveAsAsset)
+            FinishAssetSave();
+#endif
+    }
+
+    private TerrainData CreateTerrainData(bool saveAsAsset)
+    {
+        var data = new TerrainData();
+
+#if UNITY_EDITOR
+        if (saveAsAsset)
+        {
+            string directory = "Assets/GeneratedTerrains";
+            if (!System.IO.Directory.Exists(directory))
+                System.IO.Directory.CreateDirectory(directory);
+
+            string path = AssetDatabase.GenerateUniqueAssetPath($"{directory}/Terrain_{_seed}.asset");
+            AssetDatabase.CreateAsset(data, path);
+        }
+#endif
+        return data;
+    }
+
+    private void ApplyAlphamap()
+    {
+        _terrainData.SetAlphamaps(0, 0, _alphamap);
+        _terrainData.SetBaseMapDirty();
+        _terrainData.SyncTexture(TerrainData.AlphamapTextureName);
     }
 
     private TerrainLayer[] GetTerrainLayersFromBiomes()
@@ -130,7 +160,10 @@ public class TerrainGenerator : MonoBehaviour, ISaveble
                 Debug.LogWarning($"Biome '{_biomes.Biomes[i].biomeName}' не имеет TerrainLayer!");
                 layers[i] = new TerrainLayer();
             }
-            layers[i] = _biomes.Biomes[i].terrainLayer;
+            else
+            {
+                layers[i] = _biomes.Biomes[i].terrainLayer;
+            }
         }
         return layers;
     }
@@ -140,7 +173,6 @@ public class TerrainGenerator : MonoBehaviour, ISaveble
         int alphaRes = _terrainData.alphamapResolution;
         float[,,] alphamap = new float[alphaRes, alphaRes, _biomes.Biomes.Length];
 
-        // Генерация случайных центров и биомов для них
         Vector2[] cellCenters = new Vector2[_numCells];
         int[] cellBiomes = new int[_numCells];
         for (int i = 0; i < _numCells; i++)
@@ -149,7 +181,6 @@ public class TerrainGenerator : MonoBehaviour, ISaveble
             cellBiomes[i] = Random.Range(0, _biomes.Biomes.Length);
         }
 
-        // Для каждой точки альфа-карты находим ближайшее ядро
         for (int z = 0; z < alphaRes; z++)
         {
             for (int x = 0; x < alphaRes; x++)
@@ -164,7 +195,7 @@ public class TerrainGenerator : MonoBehaviour, ISaveble
                 {
                     float dx = normX - cellCenters[i].x;
                     float dy = normZ - cellCenters[i].y;
-                    float dist = dx * dx + dy * dy; // квадрат расстояния (быстрее sqrt)
+                    float dist = dx * dx + dy * dy;
 
                     if (dist < minDist)
                     {
@@ -173,7 +204,6 @@ public class TerrainGenerator : MonoBehaviour, ISaveble
                     }
                 }
 
-                // Устанавливаем вес 1 для выбранного биома, 0 для остальных
                 for (int i = 0; i < _biomes.Biomes.Length; i++)
                     alphamap[z, x, i] = (i == closestBiome) ? 1f : 0f;
             }
@@ -181,7 +211,6 @@ public class TerrainGenerator : MonoBehaviour, ISaveble
 
         return alphamap;
     }
-
 
     public void SaveState(WorldData data)
     {
@@ -203,29 +232,23 @@ public class TerrainGenerator : MonoBehaviour, ISaveble
         _seed = data.Seed;
     }
 
+#if UNITY_EDITOR
     [ContextMenu("Generate Terrain")]
     private void GenerateInEditor()
     {
-        GenerateTerrain();
-        #if UNITY_EDITOR
-            SaveTerrainDataAsAsset();
-            _terrain.Flush();                        // заставляет террейн пересобрать LOD/рендер
-            EditorUtility.SetDirty(_terrainData);    // помечает ассет как изменённый
-            EditorUtility.SetDirty(_terrain);        // и сам GameObject
-            UnityEditor.SceneView.RepaintAll();      // перерисовать Scene view
-        #endif
+        GenerateTerrain(true);
+        SceneView.RepaintAll();
     }
-    #if UNITY_EDITOR
-    private void SaveTerrainDataAsAsset()
+
+    private void FinishAssetSave()
     {
-    string path = $"Assets/GeneratedTerrains/Terrain_{_seed}.asset";
-    System.IO.Directory.CreateDirectory("Assets/GeneratedTerrains");
+        _terrain.Flush();
 
-    AssetDatabase.CreateAsset(_terrainData, path);
-    AssetDatabase.SaveAssets();
-    AssetDatabase.Refresh();
+        EditorUtility.SetDirty(_terrainData);
+        EditorUtility.SetDirty(_terrain);
+        AssetDatabase.SaveAssets();
 
-    Debug.Log($"TerrainData saved to {path}");
+        UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
     }
-    #endif
+#endif
 }
