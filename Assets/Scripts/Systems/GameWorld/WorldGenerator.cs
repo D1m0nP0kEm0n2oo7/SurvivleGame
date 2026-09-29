@@ -34,17 +34,18 @@ public class TerrainGenerator : MonoBehaviour, ISaveble
 
     public int LoadPriority => 0;
 
-    private void Start()
-    {
-         //GenerateTerrain(false); Не создаем мир при старте, пока
-    }
-
+    /// <summary>
+    /// Regenerates the world with a new seed.
+    /// </summary>
     public void ReGeneration()
     {
         _seed = 0;
         GenerateTerrain(false);
     }
 
+    /// <summary>
+    /// For world scaling, if generation parameters are not specified, the system calculates a multiplier based on a base value and scales the generation parameters linearly. 
+    /// </summary>
     private void WorldScaling()
     {
         if (_terrainSize <= 0)
@@ -65,6 +66,10 @@ public class TerrainGenerator : MonoBehaviour, ISaveble
             _perlinNoiseScale = _basePerlinNoiseScale * worldScale;
     }
 
+    /// <summary>
+    /// Generation world
+    /// </summary>
+    /// <param name="saveAsAsset"></param>
     private void GenerateTerrain(bool saveAsAsset)
     {
         WorldScaling();
@@ -88,13 +93,16 @@ public class TerrainGenerator : MonoBehaviour, ISaveble
         _terrainTransform = _terrain.transform;
 
         for (int i = _terrainTransform.childCount - 1; i >= 0; i--)
-            DestroyImmediate(_terrainTransform.GetChild(i).gameObject);
+            if (Application.isPlaying)
+                Destroy(_terrainTransform.GetChild(i).gameObject);
+            else
+                DestroyImmediate(_terrainTransform.GetChild(i).gameObject);
 
         _terrainData = CreateTerrainData(saveAsAsset);
         _terrainData.alphamapResolution = _alphamapResolution;
-        _terrainData.size = new Vector3(_terrainSize, 100f, _terrainSize);
-
+        _terrainData.size = new Vector3(_terrainSize, 0, _terrainSize);
         _terrain.terrainData = _terrainData;
+
         var terrainCollider = _terrain.GetComponent<TerrainCollider>();
         if (terrainCollider != null)
             terrainCollider.terrainData = _terrainData;
@@ -112,9 +120,6 @@ public class TerrainGenerator : MonoBehaviour, ISaveble
                 _biomes.Biomes, _perlinNoiseStep, _perlinNoiseScale);
 
         Random.state = _defaultState;
-
-        _terrainData.terrainLayers = GetTerrainLayersFromBiomes();
-        ApplyAlphamap();
 
 #if UNITY_EDITOR
         if (saveAsAsset)

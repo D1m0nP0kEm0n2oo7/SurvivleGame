@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class WorldObjectSpawner : MonoBehaviour
 {
+    private List<GameObject> _candidates = new List<GameObject>();
+
     public void SpawnWorldObjects(Terrain terrain, 
         TerrainData terrainData, 
         float[,,] alphamap,
@@ -21,8 +23,8 @@ public class WorldObjectSpawner : MonoBehaviour
         float offsetZ = Random.Range(0f, 1f);
         Debug.Log($"offsetX = {offsetX}, offsetZ = {offsetZ}");
 
-        // Для временного списка кандидатов (чтобы не аллоцировать каждый раз, можно вынести, но для простоты оставим так)
-        List<GameObject> candidates = new List<GameObject>();
+        GameObject root = new GameObject("Root");
+        root.transform.SetParent(terrainTransform);
 
         for (float x = 0; x < terrainSize; x += perlinNoiseStep)
         {
@@ -59,7 +61,7 @@ public class WorldObjectSpawner : MonoBehaviour
                 if (biome.worldObjects == null) continue;
 
                 // 3. Собираем объекты, прошедшие персональный порог
-                candidates.Clear();
+                _candidates.Clear();
                 foreach (WorldObject worldObj in biome.worldObjects)
                 {
                     if (worldObj.prefab == null) continue;
@@ -67,19 +69,19 @@ public class WorldObjectSpawner : MonoBehaviour
                     float threshold = 1f - worldObj.spawnChance;
                     if (noiseValue > threshold)
                     {
-                        candidates.Add(worldObj.prefab);
+                        _candidates.Add(worldObj.prefab);
                     }
                 }
 
                 // 4. Если есть кандидаты — спавним одного случайного
-                if (candidates.Count > 0)
+                if (_candidates.Count > 0)
                 {
-                    GameObject chosen = candidates[Random.Range(0, candidates.Count)];
+                    GameObject chosen = _candidates[Random.Range(0, _candidates.Count)];
                     Vector3 spawnPos = new Vector3(
                         terrainTransform.position.x + x + Random.Range(-0.5f, 0.5f),
                         0,
                         terrainTransform.position.z + z + Random.Range(-0.5f, 0.5f));
-                    Instantiate(chosen, spawnPos, Quaternion.Euler(0, Random.Range(-0, 180), 0), terrainTransform);
+                    Instantiate(chosen, spawnPos, Quaternion.Euler(0, Random.Range(-0, 180), 0), root.transform);
                 }
             }
         }
