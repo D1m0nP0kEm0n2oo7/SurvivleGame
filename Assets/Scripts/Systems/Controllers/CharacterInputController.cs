@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class CharacterInputControler : MonoBehaviour
+public class CharacterInputController : MonoBehaviour
 {
     private GameInput _gameInput;
     private IControllable _controllable;
@@ -21,6 +21,7 @@ public class CharacterInputControler : MonoBehaviour
     private void Update()
     {
         ReadMovement();
+        ReadRotation();
     }
 
     private void ReadMovement()
@@ -31,4 +32,10 @@ public class CharacterInputControler : MonoBehaviour
         _controllable.Move(direction);
     }
 
+    private void ReadRotation()
+    {
+        float inputDirection = _gameInput.Gameplay.CameraRotate.ReadValue<float>();
+
+        _controllable.Rotate(inputDirection);
+    }
 }

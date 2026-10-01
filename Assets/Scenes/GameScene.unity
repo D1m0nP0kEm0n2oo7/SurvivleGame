@@ -96397,6 +96397,11 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1529690445}
   m_Mesh: {fileID: -1579241630799410176, guid: 54a00edc951f4114abcaf90a3585e8a5, type: 3}
+--- !u!4 &1530943039 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4560845645025084143, guid: c1d7c7f515906da438c230132b467bcc, type: 3}
+  m_PrefabInstance: {fileID: 4647888937475613643}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1532822875
 GameObject:
   m_ObjectHideFlags: 0
@@ -130814,19 +130819,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 7116553433653598668, guid: c1d7c7f515906da438c230132b467bcc, type: 3}
   m_PrefabInstance: {fileID: 4647888937475613643}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &2052902292
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2052902290}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1baa1ffb3e721414b9852d27352d5b2e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerController
-  _speed: 10
 --- !u!143 &2052902293
 CharacterController:
   m_ObjectHideFlags: 0
@@ -130861,9 +130853,24 @@ MonoBehaviour:
   m_GameObject: {fileID: 2052902290}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0f300ffdf1c360b4b89ab219e4adf986, type: 3}
+  m_Script: {fileID: 11500000, guid: 87d13d80adfa02b4bbe2709dea537f39, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CharacterInputControler
+--- !u!114 &2052902295
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2052902290}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 58aca1f3cc0580a4b86372272ac8a533, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Character
+  _speed: 10
+  _mainCamera: {fileID: 1530943039}
+  _rotateSpeed: 75
 --- !u!1 &2054568564
 GameObject:
   m_ObjectHideFlags: 0
@@ -137742,10 +137749,10 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 7585638017544821576, guid: c1d7c7f515906da438c230132b467bcc, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 2052902292}
+      addedObject: {fileID: 2052902293}
     - targetCorrespondingSourceObject: {fileID: 7585638017544821576, guid: c1d7c7f515906da438c230132b467bcc, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 2052902293}
+      addedObject: {fileID: 2052902295}
     - targetCorrespondingSourceObject: {fileID: 7585638017544821576, guid: c1d7c7f515906da438c230132b467bcc, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2052902294}
