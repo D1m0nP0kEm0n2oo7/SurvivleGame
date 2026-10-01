@@ -10,8 +10,8 @@ public class Character : MonoBehaviour, IControllable
 
 
     private CharacterController _controller;
-    private Vector3 _moveDerection;
-    private float _rotateDerection;
+    private Vector3 _moveDirection;
+    private float _rotateDirection;
 
     private void Awake()
     {
@@ -26,21 +26,33 @@ public class Character : MonoBehaviour, IControllable
 
     public void Move(Vector3 direction)
     {
-        _moveDerection = direction;
+        _moveDirection = direction;
     }
 
     private void MoveInternal()
     {
-        _controller.Move(_moveDerection * _speed * Time.fixedDeltaTime);
+        Vector3 cameraForward = _mainCamera.forward;
+        Vector3 cameraRight = _mainCamera.right;
+
+        cameraForward.y = 0f;
+        cameraRight.y = 0f;
+
+        cameraForward.Normalize();
+        cameraRight.Normalize();
+
+        Vector3 moveDirection = (cameraForward * _moveDirection.z + cameraRight * _moveDirection.x).normalized;
+
+
+        _controller.Move(moveDirection * _speed * Time.fixedDeltaTime);
     }
 
     public void Rotate(float direction)
     {
-        _rotateDerection = direction;
+        _rotateDirection = direction;
     }
 
     private void RotateInternal()
     {
-        _mainCamera.RotateAround(transform.position, Vector3.up, _rotateSpeed * _rotateDerection * Time.fixedDeltaTime);
+        _mainCamera.RotateAround(transform.position, Vector3.up, _rotateSpeed * _rotateDirection * Time.fixedDeltaTime);
     }
 }
