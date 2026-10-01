@@ -130868,9 +130868,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 58aca1f3cc0580a4b86372272ac8a533, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Character
-  _speed: 10
+  _speed: 6.5
   _mainCamera: {fileID: 1530943039}
-  _rotateSpeed: 75
+  _rotateSpeed: 85
 --- !u!1 &2054568564
 GameObject:
   m_ObjectHideFlags: 0
@@ -137698,6 +137698,26 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 763558082}
     m_Modifications:
+    - target: {fileID: 4560845645025084143, guid: c1d7c7f515906da438c230132b467bcc, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 11
+      objectReference: {fileID: 0}
+    - target: {fileID: 4560845645025084143, guid: c1d7c7f515906da438c230132b467bcc, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -9
+      objectReference: {fileID: 0}
+    - target: {fileID: 4560845645025084143, guid: c1d7c7f515906da438c230132b467bcc, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.9396927
+      objectReference: {fileID: 0}
+    - target: {fileID: 4560845645025084143, guid: c1d7c7f515906da438c230132b467bcc, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0.3420201
+      objectReference: {fileID: 0}
+    - target: {fileID: 4560845645025084143, guid: c1d7c7f515906da438c230132b467bcc, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 40
+      objectReference: {fileID: 0}
     - target: {fileID: 7116553433653598668, guid: c1d7c7f515906da438c230132b467bcc, type: 3}
       propertyPath: m_LocalPosition.x
       value: 100
