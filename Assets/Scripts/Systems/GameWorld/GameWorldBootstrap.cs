@@ -4,6 +4,7 @@ public class GameWorldBootstrap : MonoBehaviour
 {
     [SerializeField] private TerrainGenerator _terrainGenerator;
     [SerializeField] private WorldObjectSpawner _worldObjectSpawner;
+    [SerializeField] private CharacterSpawner _characterSpawner;
     private void Awake()
     {
         _terrainGenerator.Init();
@@ -16,5 +17,6 @@ public class GameWorldBootstrap : MonoBehaviour
             _terrainGenerator.PerlinNoiseScale,
             _terrainGenerator.Seed
             );
+        _characterSpawner.SpawnCharacter(_terrainGenerator.Terrain);
     }
 }

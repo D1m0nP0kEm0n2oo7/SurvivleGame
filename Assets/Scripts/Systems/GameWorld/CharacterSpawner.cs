@@ -2,15 +2,9 @@ using UnityEngine;
 
 public class CharacterSpawner : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    [SerializeField] private GameObject _character;
+    public void SpawnCharacter(Terrain terrain)
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        Instantiate(_character, terrain.transform);
     }
 }
