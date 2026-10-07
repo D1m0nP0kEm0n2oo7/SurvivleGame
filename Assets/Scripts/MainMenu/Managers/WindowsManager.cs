@@ -1,16 +1,11 @@
 using UnityEngine;
 
+public enum WindowName {NewGame, Saves, Options}
+
 public class WindowsManager : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    public void OpenWindow(WindowName windowName)
     {
-        
-    }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 }
