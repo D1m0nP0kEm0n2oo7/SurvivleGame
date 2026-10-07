@@ -1,7 +1,4 @@
 ﻿using UnityEngine;
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
 
 public class TerrainGenerator : MonoBehaviour, ISaveble
 {
@@ -15,9 +12,6 @@ public class TerrainGenerator : MonoBehaviour, ISaveble
     [SerializeField] private BiomeDatabase _biomes;
     [SerializeField] private int _numCells;
     [SerializeField] private int _seed = 0;
-
-    [Header("Спавнер обектов")]
-    [SerializeField] private WorldObjectSpawner _objectSpawner;
 
     private const int _baseTerrainSize = 200;
     private const int _baseAlphamapResolution = 512;
@@ -34,13 +28,17 @@ public class TerrainGenerator : MonoBehaviour, ISaveble
 
     public int LoadPriority => 0;
 
-    /// <summary>
-    /// Regenerates the world with a new seed.
-    /// </summary>
-    public void ReGeneration()
+    public Terrain Terrain => _terrain;
+    public TerrainData TerrainData => _terrainData;
+    public float[,,] Alphamap => _alphamap;
+    public Biome[] Biomes => _biomes.Biomes;
+    public float PerlinNoiseStep => _perlinNoiseStep;
+    public float PerlinNoiseScale => _perlinNoiseScale;
+    public int Seed => _seed;
+
+    public void Init()
     {
-        _seed = 0;
-        GenerateTerrain(false);
+        GenerateTerrain();
     }
 
     /// <summary>
@@ -69,8 +67,7 @@ public class TerrainGenerator : MonoBehaviour, ISaveble
     /// <summary>
     /// Generation world
     /// </summary>
-    /// <param name="saveAsAsset"></param>
-    private void GenerateTerrain(bool saveAsAsset)
+    private void GenerateTerrain()
     {
         WorldScaling();
 
@@ -98,7 +95,7 @@ public class TerrainGenerator : MonoBehaviour, ISaveble
             else
                 DestroyImmediate(_terrainTransform.GetChild(i).gameObject);
 
-        _terrainData = CreateTerrainData(saveAsAsset);
+        _terrainData = new TerrainData();
         _terrainData.alphamapResolution = _alphamapResolution;
         _terrainData.size = new Vector3(_terrainSize, 0, _terrainSize);
         _terrain.terrainData = _terrainData;
@@ -115,34 +112,8 @@ public class TerrainGenerator : MonoBehaviour, ISaveble
         _alphamap = GetAlphaMap();
         ApplyAlphamap();
 
-        if (_objectSpawner)
-            _objectSpawner.SpawnWorldObjects(_terrain, _terrainData, _alphamap,
-                _biomes.Biomes, _perlinNoiseStep, _perlinNoiseScale);
-
         Random.state = _defaultState;
 
-#if UNITY_EDITOR
-        if (saveAsAsset)
-            FinishAssetSave();
-#endif
-    }
-
-    private TerrainData CreateTerrainData(bool saveAsAsset)
-    {
-        var data = new TerrainData();
-
-#if UNITY_EDITOR
-        if (saveAsAsset)
-        {
-            string directory = "Assets/GeneratedTerrains";
-            if (!System.IO.Directory.Exists(directory))
-                System.IO.Directory.CreateDirectory(directory);
-
-            string path = AssetDatabase.GenerateUniqueAssetPath($"{directory}/Terrain_{_seed}.asset");
-            AssetDatabase.CreateAsset(data, path);
-        }
-#endif
-        return data;
     }
 
     private void ApplyAlphamap()
@@ -236,24 +207,4 @@ public class TerrainGenerator : MonoBehaviour, ISaveble
         _perlinNoiseScale = data.PerlinNoiseScale;
         _seed = data.Seed;
     }
-
-#if UNITY_EDITOR
-    [ContextMenu("Generate Terrain")]
-    private void GenerateInEditor()
-    {
-        GenerateTerrain(true);
-        SceneView.RepaintAll();
-    }
-
-    private void FinishAssetSave()
-    {
-        _terrain.Flush();
-
-        EditorUtility.SetDirty(_terrainData);
-        EditorUtility.SetDirty(_terrain);
-        AssetDatabase.SaveAssets();
-
-        UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
-    }
-#endif
 }

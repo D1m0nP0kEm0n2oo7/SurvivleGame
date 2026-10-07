@@ -4,17 +4,23 @@ using UnityEngine;
 public class WorldObjectSpawner : MonoBehaviour
 {
     private List<GameObject> _candidates = new List<GameObject>();
-
+    private Random.State _defoltState;
+    
+    private const int SpawnSeedSalt = 0x5F3759DF;
     public void SpawnWorldObjects(Terrain terrain, 
         TerrainData terrainData, 
         float[,,] alphamap,
         Biome[] biomes, 
         float perlinNoiseStep, 
-        float perlinNoiseScale)
-    {
+        float perlinNoiseScale,
+        int seed) {
+
         if (terrain == null || terrainData == null || alphamap == null) return;
 
-        
+        _defoltState = Random.state;
+        Random.InitState(seed ^ SpawnSeedSalt);
+
+
         int alphaRes = terrainData.alphamapResolution;
         float terrainSize = terrainData.size.x;
         Transform terrainTransform = terrain.transform;
@@ -81,9 +87,10 @@ public class WorldObjectSpawner : MonoBehaviour
                         terrainTransform.position.x + x + Random.Range(-0.5f, 0.5f),
                         0,
                         terrainTransform.position.z + z + Random.Range(-0.5f, 0.5f));
-                    Instantiate(chosen, spawnPos, Quaternion.Euler(0, Random.Range(-0, 180), 0), root.transform);
+                    Instantiate(chosen, spawnPos, Quaternion.Euler(0, Random.Range(0, 360), 0), root.transform);
                 }
             }
         }
+        Random.state = _defoltState;
     } 
 }
