@@ -6,7 +6,7 @@ public readonly struct GeneratedWorld
     public readonly TerrainData TerrainData;
     public readonly float[,,] Alphamap;
     public readonly Biome[] Biomes;
-
+    public bool IsValid => Terrain != null;
     public GeneratedWorld(Terrain terrain, TerrainData terrainData, float[,,] alphamap, Biome[] biomes)
     {
         Terrain = terrain;
@@ -18,11 +18,17 @@ public readonly struct GeneratedWorld
 
 public class TerrainGenerator : MonoBehaviour
 {
-    private Terrain _terrain;
-    private TerrainData _ownedData; 
+    [SerializeField] private WorldSaver _world;
+    [SerializeField] private WorldGenerationConfig _config;
 
-    public GeneratedWorld Generate(WorldSettings settings, WorldGenerationConfig config)
+    private Terrain _terrain;
+    private TerrainData _ownedData;
+
+    public GeneratedWorld Generate()
     {
+        WorldSettings settings = _world.Settings;
+        WorldGenerationConfig config = _config;
+
         Biome[] biomes = config.Biomes.Biomes;
         if (biomes == null || biomes.Length == 0)
         {

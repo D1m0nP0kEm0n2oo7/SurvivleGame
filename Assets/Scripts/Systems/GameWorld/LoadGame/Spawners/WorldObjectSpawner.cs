@@ -5,22 +5,45 @@ public class WorldObjectSpawner : MonoBehaviour
 {
     private const int SpawnSeedSalt = 0x5F3759DF;
 
+    [SerializeField] private WorldSaver _world;
+    [SerializeField] private ObjectsSaver _saver;
+
     private readonly List<GameObject> _candidates = new List<GameObject>();
+    private readonly Dictionary<int, GameObject> _idToPrefab = new Dictionary<int, GameObject>();
     private Transform _root;
 
-    public Transform Root => _root;
-    public Terrain Terrain { get; private set; }
+    /// <summary>Единый способ получить ID префаба (совместим со старыми сохранениями).</summary>
+    public static int PrefabId(GameObject prefab) => prefab.name.GetHashCode();
 
-    public void SpawnWorldObjects(GeneratedWorld world, WorldSettings settings)
+    public void Spawn(GeneratedWorld world)
     {
-        if (settings == null || world.Terrain == null)
+        if (!world.IsValid)
             return;
 
-        Terrain = world.Terrain;
+        BuildPrefabMap(world.Biomes);
+        RecreateRoot(world.Terrain.transform);
+        _saver.Bind(_root);
+
+        if (_saver.HasSave)
+            SpawnFromSave(world.Terrain, _saver.Loaded);
+        else
+            SpawnGenerated(world, _world.Settings);
+    }
+
+    private void SpawnFromSave(Terrain terrain, ObjectData[] objects)
+    {
+        foreach (ObjectData od in objects)
+        {
+            if (!_idToPrefab.TryGetValue(od.ID, out GameObject prefab))
+                continue;
+
+            Place(terrain, prefab, od.PosX, od.PosZ, od.RotationY);
+        }
+    }
+
+    private void SpawnGenerated(GeneratedWorld world, WorldSettings settings)
+    {
         Terrain terrain = world.Terrain;
-
-        var rng = new System.Random(settings.Seed ^ SpawnSeedSalt);
-
         float[,,] alphamap = world.Alphamap;
         Biome[] biomes = world.Biomes;
 
@@ -28,68 +51,85 @@ public class WorldObjectSpawner : MonoBehaviour
         float terrainSize = world.TerrainData.size.x;
         Vector3 terrainPos = terrain.transform.position;
 
-        float perlinNoiseStep = settings.PerlinNoiseStep;
-        float perlinNoiseScale = settings.PerlinNoiseScale;
+        float step = settings.PerlinNoiseStep;
+        float scale = settings.PerlinNoiseScale;
 
+        var rng = new System.Random(settings.Seed ^ SpawnSeedSalt);
         float offsetX = (float)rng.NextDouble();
         float offsetZ = (float)rng.NextDouble();
 
-        RecreateRoot(terrain.transform);
-
-        for (float x = 0; x < terrainSize; x += perlinNoiseStep)
+        for (float x = 0; x < terrainSize; x += step)
         {
-            for (float z = 0; z < terrainSize; z += perlinNoiseStep)
+            for (float z = 0; z < terrainSize; z += step)
             {
                 float normX = x / terrainSize;
                 float normZ = z / terrainSize;
 
-                // 1. Шум Перлина
-                float noiseValue = Mathf.PerlinNoise(
-                    (normX + offsetX) * perlinNoiseScale,
-                    (normZ + offsetZ) * perlinNoiseScale);
+                float noise = Mathf.PerlinNoise(
+                    (normX + offsetX) * scale,
+                    (normZ + offsetZ) * scale);
 
-                // 2. Доминирующий биом
                 int alphaX = Mathf.Clamp(Mathf.FloorToInt(normX * alphaRes), 0, alphaRes - 1);
                 int alphaZ = Mathf.Clamp(Mathf.FloorToInt(normZ * alphaRes), 0, alphaRes - 1);
 
-                int dominantBiome = GetDominantBiome(alphamap, alphaZ, alphaX, biomes.Length);
-                if (dominantBiome < 0) continue;
+                int dominant = GetDominantBiome(alphamap, alphaZ, alphaX, biomes.Length);
+                if (dominant < 0) continue;
 
-                Biome biome = biomes[dominantBiome];
-                if (biome.worldObjects == null) continue;
+                WorldObject[] objs = biomes[dominant].worldObjects;
+                if (objs == null) continue;
 
-                // 3. Кандидаты, прошедшие порог
                 _candidates.Clear();
-                foreach (WorldObject worldObj in biome.worldObjects)
+                foreach (WorldObject wo in objs)
                 {
-                    if (worldObj.prefab == null) continue;
-                    if (noiseValue > 1f - worldObj.spawnChance)
-                        _candidates.Add(worldObj.prefab);
+                    if (wo.prefab != null && noise > 1f - wo.spawnChance)
+                        _candidates.Add(wo.prefab);
                 }
                 if (_candidates.Count == 0) continue;
 
-                // 4. Спавн одного случайного
                 GameObject chosen = _candidates[rng.Next(_candidates.Count)];
 
                 float posX = Mathf.Clamp(x + Range(rng, -0.5f, 0.5f), 0f, terrainSize);
                 float posZ = Mathf.Clamp(z + Range(rng, -0.5f, 0.5f), 0f, terrainSize);
                 float yaw = Range(rng, 0f, 360f);
 
-                var worldPos = new Vector3(terrainPos.x + posX, 0f, terrainPos.z + posZ);
-                worldPos.y = terrain.SampleHeight(worldPos) + terrainPos.y;
+                Place(terrain, chosen, terrainPos.x + posX, terrainPos.z + posZ, yaw);
+            }
+        }
+    }
+    private void Place(Terrain terrain, GameObject prefab, float worldX, float worldZ, float yaw)
+    {
+        var pos = new Vector3(worldX, 0f, worldZ);
+        pos.y = terrain.SampleHeight(pos) + terrain.transform.position.y;
 
-                GameObject go = Instantiate(chosen, worldPos, Quaternion.Euler(0f, yaw, 0f), _root);
+        GameObject go = Instantiate(prefab, pos, Quaternion.Euler(0f, yaw, 0f), _root);
 
-                SpawnedObject so = go.GetComponent<SpawnedObject>()
-                                ?? go.AddComponent<SpawnedObject>();
-                so.PrefabId = ObjectsSaver.PrefabId(chosen);
+        SpawnedObject so = go.GetComponent<SpawnedObject>();
+        if (so == null) so = go.AddComponent<SpawnedObject>();
+        so.PrefabId = PrefabId(prefab);
+    }
+
+    private void BuildPrefabMap(Biome[] biomes)
+    {
+        _idToPrefab.Clear();
+        foreach (Biome biome in biomes)
+        {
+            if (biome.worldObjects == null) continue;
+            foreach (WorldObject wo in biome.worldObjects)
+            {
+                if (wo.prefab == null) continue;
+                _idToPrefab.TryAdd(PrefabId(wo.prefab), wo.prefab);
             }
         }
     }
 
-    /// <summary>Удаляет корень с заспавненными объектами и создаёт пустой заново.</summary>
-    public void ClearSpawned()
-        => RecreateRoot(Terrain != null ? Terrain.transform : transform);
+    private void RecreateRoot(Transform parent)
+    {
+        if (_root != null)
+            Destroy(_root.gameObject);
+
+        _root = new GameObject("WorldObjects").transform;
+        _root.SetParent(parent, false);
+    }
 
     private static int GetDominantBiome(float[,,] alphamap, int z, int x, int biomeCount)
     {
@@ -105,15 +145,6 @@ public class WorldObjectSpawner : MonoBehaviour
             }
         }
         return dominant;
-    }
-
-    private void RecreateRoot(Transform parent)
-    {
-        if (_root != null)
-            Destroy(_root.gameObject);
-
-        _root = new GameObject("WorldObjects").transform;
-        _root.SetParent(parent, false);
     }
 
     private static float Range(System.Random rng, float min, float max)

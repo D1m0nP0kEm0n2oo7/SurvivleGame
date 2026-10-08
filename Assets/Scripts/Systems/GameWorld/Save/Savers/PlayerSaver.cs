@@ -1,67 +1,43 @@
 using UnityEngine;
 
+/// <summary>Хранит данные секции Character. Живёт в сцене, а не на префабе игрока.</summary>
 public class PlayerSaver : SaveableBehaviour
 {
-    [Header("Max stats")]
-    [SerializeField] private int _maxHealth = 100;
-    [SerializeField] private int _maxHunger = 100;
-    [SerializeField] private int _maxThirst = 100;
-    [SerializeField] private int _maxMind = 100;
+    private Transform _character;
+    private PlayerStats _stats;
 
-    private int _health;
-    private int _hunger;
-    private int _thirst;
-    private int _mind;
+    public CharacterData Loaded { get; private set; }
+    public bool HasSave => Loaded != null && Loaded.MaxHealth > 0;
 
-    public override int LoadPriority => 30;
-
-    private void Awake()
+    /// <summary>Спавнер вызывает после создания персонажа.</summary>
+    public void Bind(Transform character, PlayerStats stats)
     {
-        _health = _maxHealth;
-        _hunger = _maxHunger;
-        _thirst = _maxThirst;
-        _mind = _maxMind;
+        _character = character;
+        _stats = stats;
     }
 
-    public override void Save(WorldData worldData)
-    {
-        Vector3 pos = transform.position;
+    public override void Load(WorldData data) => Loaded = data.Character;
 
-        worldData.Character = new CharacterData
+    public override void Save(WorldData data)
+    {
+        if (_character == null)
+        {
+            data.Character = Loaded;
+            return;
+        }
+
+        Vector3 pos = _character.position;
+        var c = new CharacterData
         {
             PosX = pos.x,
             PosY = pos.y,
             PosZ = pos.z,
-            RotationY = transform.eulerAngles.y,
-
-            MaxHealth = _maxHealth,
-            MaxHunger = _maxHunger,
-            MaxThirst = _maxThirst,
-            MaxMind = _maxMind,
-
-            Health = _health,
-            Hunger = _hunger,
-            Thirst = _thirst,
-            Mind = _mind,
+            RotationY = _character.eulerAngles.y,
         };
-    }
 
-    public override void Load(WorldData worldData)
-    {
-        CharacterData c = worldData.Character;
-        if (c == null) return;
+        if (_stats != null)
+            _stats.WriteTo(c);
 
-        transform.position = new Vector3(c.PosX, c.PosY, c.PosZ);
-        transform.rotation = Quaternion.Euler(0f, c.RotationY, 0f);
-
-        _maxHealth = c.MaxHealth;
-        _maxHunger = c.MaxHunger;
-        _maxThirst = c.MaxThirst;
-        _maxMind = c.MaxMind;
-
-        _health = c.Health;
-        _hunger = c.Hunger;
-        _thirst = c.Thirst;
-        _mind = c.Mind;
+        data.Character = c;
     }
 }

@@ -4,7 +4,6 @@ public abstract class SaveableBehaviour : MonoBehaviour, ISaveable, ISaveRegistr
 {
     private ISaveRegistry _registry;
 
-    public abstract int LoadPriority { get; }
     public abstract void Save(WorldData data);
     public abstract void Load(WorldData data);
 

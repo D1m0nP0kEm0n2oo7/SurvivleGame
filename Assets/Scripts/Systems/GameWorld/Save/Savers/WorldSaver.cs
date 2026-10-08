@@ -2,20 +2,23 @@ using UnityEngine;
 
 public class WorldSaver : SaveableBehaviour
 {
-    [SerializeField] private WorldTime _worldTime = new WorldTime();
+    [SerializeField] private WorldGenerationConfig _config;
 
-    /// <summary>Время мира. Доступно другим системам (тик времени и т.п.).</summary>
-    public WorldTime Time => _worldTime;
+    public WorldSettings Settings { get; private set; }
+    public WorldTime Time { get; } = new WorldTime();
 
-    public override int LoadPriority => 10;
-
-    public override void Save(WorldData worldData)
+    public override void Load(WorldData d)
     {
-        worldData.WorldTimeSec = _worldTime.seconds;
+        bool hasWorld = d.World != null && d.World.TerrainSize > 0;
+        Settings = hasWorld
+            ? d.World
+            : WorldSettings.Create(_config, Random.Range(int.MinValue, int.MaxValue));
+        Time.seconds = d.WorldTimeSec;
     }
 
-    public override void Load(WorldData worldData)
+    public override void Save(WorldData d)
     {
-        _worldTime.seconds = worldData.WorldTimeSec;
+        d.World = Settings;
+        d.WorldTimeSec = Time.seconds;
     }
 }
