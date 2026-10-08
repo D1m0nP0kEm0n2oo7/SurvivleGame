@@ -1,23 +1,26 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Rendering;
-using UnityEngine.UIElements;
 
 public class WorldObjectSpawner : MonoBehaviour
-{   
+{
     private const int SpawnSeedSalt = 0x5F3759DF;
 
     private readonly List<GameObject> _candidates = new List<GameObject>();
     private Transform _root;
+
+    public Transform Root => _root;
+    public Terrain Terrain { get; private set; }
 
     public void SpawnWorldObjects(GeneratedWorld world, WorldSettings settings)
     {
         if (settings == null || world.Terrain == null)
             return;
 
+        Terrain = world.Terrain;
+        Terrain terrain = world.Terrain;
+
         var rng = new System.Random(settings.Seed ^ SpawnSeedSalt);
 
-        Terrain terrain = world.Terrain;
         float[,,] alphamap = world.Alphamap;
         Biome[] biomes = world.Biomes;
 
@@ -30,8 +33,6 @@ public class WorldObjectSpawner : MonoBehaviour
 
         float offsetX = (float)rng.NextDouble();
         float offsetZ = (float)rng.NextDouble();
-
-        GameObject root = new GameObject("Root");
 
         RecreateRoot(terrain.transform);
 
@@ -77,10 +78,18 @@ public class WorldObjectSpawner : MonoBehaviour
                 var worldPos = new Vector3(terrainPos.x + posX, 0f, terrainPos.z + posZ);
                 worldPos.y = terrain.SampleHeight(worldPos) + terrainPos.y;
 
-                Instantiate(chosen, worldPos, Quaternion.Euler(0f, yaw, 0f), _root);
+                GameObject go = Instantiate(chosen, worldPos, Quaternion.Euler(0f, yaw, 0f), _root);
+
+                SpawnedObject so = go.GetComponent<SpawnedObject>()
+                                ?? go.AddComponent<SpawnedObject>();
+                so.PrefabId = ObjectsSaver.PrefabId(chosen);
             }
         }
     }
+
+    /// <summary>Удаляет корень с заспавненными объектами и создаёт пустой заново.</summary>
+    public void ClearSpawned()
+        => RecreateRoot(Terrain != null ? Terrain.transform : transform);
 
     private static int GetDominantBiome(float[,,] alphamap, int z, int x, int biomeCount)
     {

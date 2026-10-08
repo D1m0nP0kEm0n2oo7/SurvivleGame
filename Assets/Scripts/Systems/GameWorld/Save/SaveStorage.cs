@@ -16,8 +16,11 @@ public class SaveStorage
         get
         {
             if (_path == null)
-                _path = System.IO.Path.Combine(
-                    Application.persistentDataPath, "saves", _fileName);
+            {
+                _path = System.IO.Path.Combine(Application.persistentDataPath, "saves", _fileName);
+                Debug.Log(_path);
+            }
+
             return _path;
         }
     }
