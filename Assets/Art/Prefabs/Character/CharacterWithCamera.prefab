@@ -149,7 +149,7 @@ GameObject:
   - component: {fileID: 3572745300354019601}
   - component: {fileID: 5970157030664088167}
   - component: {fileID: 1748550773877020750}
-  - component: {fileID: -857117550849654119}
+  - component: {fileID: 8494338490605651640}
   m_Layer: 0
   m_Name: CharacterWithCamera
   m_TagString: Untagged
@@ -228,7 +228,7 @@ MonoBehaviour:
   _turnSpeed: 300
   _mainCamera: {fileID: 4560845645025084143}
   _rotateSpeed: 115
---- !u!114 &-857117550849654119
+--- !u!114 &8494338490605651640
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -237,9 +237,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 7585638017544821576}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 006fdace7834f414eadd48b9fe187ea4, type: 3}
+  m_Script: {fileID: 11500000, guid: 437924b78d1a9ac46b83ce6456c74687, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerSaver
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerStats
+  _maxHealth: 100
+  _maxHunger: 100
+  _maxThirst: 100
+  _maxMind: 100
 --- !u!1001 &259061631590811315
 PrefabInstance:
   m_ObjectHideFlags: 0

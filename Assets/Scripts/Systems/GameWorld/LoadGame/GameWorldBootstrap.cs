@@ -16,6 +16,7 @@ public class GameWorldBootstrap : MonoBehaviour
 
         _objects.Spawn(world);
         _character.Spawn(world);
+        _save.Save();
     }
 
     private void OnApplicationQuit() => _save.Save();
