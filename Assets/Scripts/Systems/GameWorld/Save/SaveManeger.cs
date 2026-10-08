@@ -1,29 +1,37 @@
 using UnityEngine;
 
-public class SaveManeger : MonoBehaviour
+public class SaveManager : MonoBehaviour
 {
-    [SerializeField] private ISaveble[] _savebles;
+    [SerializeField] private ISaveable[] _savebles;
 
     private WorldData _worldData;
-
-    public void Save()
+    private WorldDataManager _dataManager;
+    public void Init()
     {
+        _dataManager = new WorldDataManager();
         _worldData = new WorldData();
-
-        foreach (var se in _savebles)
-        {
-            se.SaveState(_worldData);
-        }
-        WorldManager.Instance.Save(_worldData);
     }
 
-    public void Load()
+    public void AllSave()
     {
-        _worldData = WorldManager.Instance.Load();
-
-        foreach (var se in _savebles)
+        foreach (var saveble in _savebles)
         {
-            se.LoadState(_worldData);
+            _worldData = saveble.SaveState(_worldData);
+        }
+        _dataManager.Save(_worldData);
+    }
+
+    public void AllLoad()
+    {
+        _worldData = _dataManager.Load();
+        if (_worldData == null)
+        {
+            Debug.Log("WorldData don`t load");
+            return;
+        }
+        foreach (var saveble in _savebles)
+        {
+            saveble.LoadState(_worldData);
         }
     }
 }

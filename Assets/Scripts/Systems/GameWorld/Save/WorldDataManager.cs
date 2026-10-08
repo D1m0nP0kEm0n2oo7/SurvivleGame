@@ -1,18 +1,12 @@
 using UnityEngine;
 using System.IO;
 
-public class WorldManager : MonoBehaviour
+public class WorldDataManager 
 {
     private string path; 
 
-    public static WorldManager Instance;
-    private void Awake()
+    public void Init()
     {
-        if (Instance == null)
-            Instance = this;
-        else
-            Destroy(this);
-
         path = Path.Combine(Application.persistentDataPath, "saves", "worldSave.json");
         Debug.Log(path);
     }

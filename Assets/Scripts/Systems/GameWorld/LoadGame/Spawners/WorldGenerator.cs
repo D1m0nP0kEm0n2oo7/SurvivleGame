@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class TerrainGenerator : MonoBehaviour, ISaveble
+public class TerrainGenerator : MonoBehaviour, ISaveable
 {
     [Header("Настройки Terrain")]
     [SerializeField] private int _terrainSize;
@@ -188,7 +188,7 @@ public class TerrainGenerator : MonoBehaviour, ISaveble
         return alphamap;
     }
 
-    public void SaveState(WorldData data)
+    public WorldData SaveState(WorldData data)
     {
         data.TerrainSize = _terrainSize;
         data.AlphamapResolution = _alphamapResolution;
@@ -196,6 +196,8 @@ public class TerrainGenerator : MonoBehaviour, ISaveble
         data.PerlinNoiseStep = _perlinNoiseStep;
         data.PerlinNoiseScale = _perlinNoiseScale;
         data.Seed = _seed;
+
+        return data;
     }
 
     public void LoadState(WorldData data)

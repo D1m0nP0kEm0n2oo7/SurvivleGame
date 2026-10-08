@@ -1,6 +1,5 @@
-public interface ISaveble
+public interface ISaveable
 {
-    void SaveState(WorldData data);
+    WorldData SaveState(WorldData data);
     void LoadState(WorldData data);
-    int LoadPriority { get; }
 }
