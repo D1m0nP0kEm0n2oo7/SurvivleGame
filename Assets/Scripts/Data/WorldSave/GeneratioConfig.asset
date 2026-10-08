@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 88bb555c6e6fbb744b4ff22aad33e9dc, type: 3}
+  m_Name: GeneratioConfig
+  m_EditorClassIdentifier: Assembly-CSharp::WorldGenerationConfig
+  TerrainSize: 200
+  AlphamapResolution: 0
+  NumCells: 0
+  PerlinNoiseStep: 0
+  PerlinNoiseScale: 0
+  Biomes: {fileID: 11400000, guid: f56893ae8286614439c688a3e4ad599e, type: 2}

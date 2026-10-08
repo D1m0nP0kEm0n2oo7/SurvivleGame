@@ -1,37 +1,39 @@
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
-public class SaveManager : MonoBehaviour
+public class SaveManager : MonoBehaviour, ISaveRegistry
 {
-    [SerializeField] private ISaveable[] _savebles;
+    private readonly List<ISaveable> _saveables = new();
+    private readonly SaveStorage _storage = new SaveStorage();
 
-    private WorldData _worldData;
-    private WorldDataManager _dataManager;
-    public void Init()
+    public WorldData Current { get; private set; }
+
+    public void Register(ISaveable saveable)
     {
-        _dataManager = new WorldDataManager();
-        _worldData = new WorldData();
+        if (saveable != null && !_saveables.Contains(saveable))
+            _saveables.Add(saveable);
     }
 
-    public void AllSave()
+    public void Unregister(ISaveable saveable) => _saveables.Remove(saveable);
+
+    public WorldData TryRead() => _storage.Read();
+
+    public void Save(WorldSettings world)
     {
-        foreach (var saveble in _savebles)
-        {
-            _worldData = saveble.SaveState(_worldData);
-        }
-        _dataManager.Save(_worldData);
+        _saveables.RemoveAll(s => s is Object o && o == null);
+
+        var data = new WorldData { World = world };
+        foreach (var s in _saveables) s.Save(data);
+
+        Current = data;
+        _storage.Write(data);
     }
 
-    public void AllLoad()
+    public void RestoreAll(WorldData data)
     {
-        _worldData = _dataManager.Load();
-        if (_worldData == null)
-        {
-            Debug.Log("WorldData don`t load");
-            return;
-        }
-        foreach (var saveble in _savebles)
-        {
-            saveble.LoadState(_worldData);
-        }
+        Current = data;
+        foreach (var s in _saveables.OrderBy(saveable => saveable.LoadPriority))
+            s.Load(data);
     }
 }

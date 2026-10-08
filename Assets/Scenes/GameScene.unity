@@ -391,13 +391,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f32b52aeffe4541459f66c728fc1f961, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TerrainGenerator
-  _terrainSize: 200
-  _alphamapResolution: 0
-  _perlinNoiseStep: 0
-  _perlinNoiseScale: 0
-  _biomes: {fileID: 11400000, guid: f56893ae8286614439c688a3e4ad599e, type: 2}
-  _numCells: 0
-  _seed: 0
 --- !u!1 &769852187
 GameObject:
   m_ObjectHideFlags: 0
@@ -407,8 +400,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 769852188}
-  - component: {fileID: 769852190}
-  - component: {fileID: 769852189}
   m_Layer: 0
   m_Name: WorldManager
   m_TagString: Untagged
@@ -431,32 +422,9 @@ Transform:
   m_Children:
   - {fileID: 2071175689}
   - {fileID: 509532017}
+  - {fileID: 1924026147}
   m_Father: {fileID: 1152729858}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &769852189
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 769852187}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 820f5e297feedd04ab2c29e1dc97c4c8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::WorldManager
---- !u!114 &769852190
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 769852187}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c0b9fdfa4ce0ac14f9e677fe15fe30fe, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SaveManeger
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
@@ -548,6 +516,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1799416114}
   - component: {fileID: 1799416113}
+  - component: {fileID: 1799416115}
   m_Layer: 0
   m_Name: Bootstrap
   m_TagString: Untagged
@@ -567,9 +536,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3f03b5cc9b417f74abb1a3dd1904c242, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameWorldBootstrap
+  _config: {fileID: 11400000, guid: 5d453de1fcae765458f45731e40108ed, type: 2}
   _terrainGenerator: {fileID: 509532018}
-  _worldObjectSpawner: {fileID: 2071175690}
+  _objectSpawner: {fileID: 2071175690}
   _characterSpawner: {fileID: 2071175691}
+  _saveManager: {fileID: 1924026148}
 --- !u!4 &1799416114
 Transform:
   m_ObjectHideFlags: 0
@@ -585,6 +556,62 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1799416115
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1799416112}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0f40f2286b245c5428d5cbfb1330c49b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WorldSaver
+--- !u!1 &1924026146
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1924026147}
+  - component: {fileID: 1924026148}
+  m_Layer: 0
+  m_Name: SaveManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1924026147
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1924026146}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 769852188}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1924026148
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1924026146}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c0b9fdfa4ce0ac14f9e677fe15fe30fe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SaveManager
 --- !u!1 &1983442073
 GameObject:
   m_ObjectHideFlags: 0

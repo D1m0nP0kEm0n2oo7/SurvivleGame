@@ -1,96 +1,112 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.UIElements;
 
 public class WorldObjectSpawner : MonoBehaviour
-{
-    private List<GameObject> _candidates = new List<GameObject>();
-    private Random.State _defoltState;
-    
+{   
     private const int SpawnSeedSalt = 0x5F3759DF;
-    public void SpawnWorldObjects(Terrain terrain, 
-        TerrainData terrainData, 
-        float[,,] alphamap,
-        Biome[] biomes, 
-        float perlinNoiseStep, 
-        float perlinNoiseScale,
-        int seed) {
 
-        if (terrain == null || terrainData == null || alphamap == null) return;
+    private readonly List<GameObject> _candidates = new List<GameObject>();
+    private Transform _root;
 
-        _defoltState = Random.state;
-        Random.InitState(seed ^ SpawnSeedSalt);
+    public void SpawnWorldObjects(GeneratedWorld world, WorldSettings settings)
+    {
+        if (settings == null || world.Terrain == null)
+            return;
 
+        var rng = new System.Random(settings.Seed ^ SpawnSeedSalt);
 
-        int alphaRes = terrainData.alphamapResolution;
-        float terrainSize = terrainData.size.x;
-        Transform terrainTransform = terrain.transform;
+        Terrain terrain = world.Terrain;
+        float[,,] alphamap = world.Alphamap;
+        Biome[] biomes = world.Biomes;
 
-        float offsetX = Random.Range(0f, 1f);
-        float offsetZ = Random.Range(0f, 1f);
-        Debug.Log($"offsetX = {offsetX}, offsetZ = {offsetZ}");
+        int alphaRes = world.TerrainData.alphamapResolution;
+        float terrainSize = world.TerrainData.size.x;
+        Vector3 terrainPos = terrain.transform.position;
+
+        float perlinNoiseStep = settings.PerlinNoiseStep;
+        float perlinNoiseScale = settings.PerlinNoiseScale;
+
+        float offsetX = (float)rng.NextDouble();
+        float offsetZ = (float)rng.NextDouble();
 
         GameObject root = new GameObject("Root");
-        root.transform.SetParent(terrainTransform);
+
+        RecreateRoot(terrain.transform);
 
         for (float x = 0; x < terrainSize; x += perlinNoiseStep)
         {
             for (float z = 0; z < terrainSize; z += perlinNoiseStep)
             {
-                // 1. Шум Перлина
                 float normX = x / terrainSize;
                 float normZ = z / terrainSize;
 
-                float noiseX = (normX + offsetX) * perlinNoiseScale;
-                float noiseZ = (normZ + offsetZ) * perlinNoiseScale;
-                float noiseValue = Mathf.PerlinNoise(noiseX, noiseZ);
+                // 1. Шум Перлина
+                float noiseValue = Mathf.PerlinNoise(
+                    (normX + offsetX) * perlinNoiseScale,
+                    (normZ + offsetZ) * perlinNoiseScale);
 
-                // 2. Биом по Вороному
-                int alphaZ = Mathf.FloorToInt(normZ * alphaRes);
-                int alphaX = Mathf.FloorToInt(normX * alphaRes);
-                alphaZ = Mathf.Clamp(alphaZ, 0, alphaRes - 1);
-                alphaX = Mathf.Clamp(alphaX, 0, alphaRes - 1);
+                // 2. Доминирующий биом
+                int alphaX = Mathf.Clamp(Mathf.FloorToInt(normX * alphaRes), 0, alphaRes - 1);
+                int alphaZ = Mathf.Clamp(Mathf.FloorToInt(normZ * alphaRes), 0, alphaRes - 1);
 
-                float maxWeight = 0f;
-                int dominantBiome = -1;
-                for (int b = 0; b < biomes.Length; b++)
-                {
-                    float weight = alphamap[alphaZ, alphaX, b];
-                    if (weight > maxWeight)
-                    {
-                        maxWeight = weight;
-                        dominantBiome = b;
-                    }
-                }
+                int dominantBiome = GetDominantBiome(alphamap, alphaZ, alphaX, biomes.Length);
                 if (dominantBiome < 0) continue;
 
                 Biome biome = biomes[dominantBiome];
                 if (biome.worldObjects == null) continue;
 
-                // 3. Собираем объекты, прошедшие персональный порог
+                // 3. Кандидаты, прошедшие порог
                 _candidates.Clear();
                 foreach (WorldObject worldObj in biome.worldObjects)
                 {
                     if (worldObj.prefab == null) continue;
-
-                    float threshold = 1f - worldObj.spawnChance;
-                    if (noiseValue > threshold)
-                    {
+                    if (noiseValue > 1f - worldObj.spawnChance)
                         _candidates.Add(worldObj.prefab);
-                    }
                 }
+                if (_candidates.Count == 0) continue;
 
-                // 4. Если есть кандидаты — спавним одного случайного
-                if (_candidates.Count > 0)
-                {
-                    GameObject chosen = _candidates[Random.Range(0, _candidates.Count)];
-                    Vector3 spawnPos = new Vector3(
-                        terrainTransform.position.x + x + Random.Range(-0.5f, 0.5f),
-                        0,
-                        terrainTransform.position.z + z + Random.Range(-0.5f, 0.5f));
-                    Instantiate(chosen, spawnPos, Quaternion.Euler(0, Random.Range(0, 360), 0), root.transform);
-                }
+                // 4. Спавн одного случайного
+                GameObject chosen = _candidates[rng.Next(_candidates.Count)];
+
+                float posX = Mathf.Clamp(x + Range(rng, -0.5f, 0.5f), 0f, terrainSize);
+                float posZ = Mathf.Clamp(z + Range(rng, -0.5f, 0.5f), 0f, terrainSize);
+                float yaw = Range(rng, 0f, 360f);
+
+                var worldPos = new Vector3(terrainPos.x + posX, 0f, terrainPos.z + posZ);
+                worldPos.y = terrain.SampleHeight(worldPos) + terrainPos.y;
+
+                Instantiate(chosen, worldPos, Quaternion.Euler(0f, yaw, 0f), _root);
             }
         }
-        Random.state = _defoltState;
-    } 
+    }
+
+    private static int GetDominantBiome(float[,,] alphamap, int z, int x, int biomeCount)
+    {
+        float maxWeight = 0f;
+        int dominant = -1;
+        for (int b = 0; b < biomeCount; b++)
+        {
+            float w = alphamap[z, x, b];
+            if (w > maxWeight)
+            {
+                maxWeight = w;
+                dominant = b;
+            }
+        }
+        return dominant;
+    }
+
+    private void RecreateRoot(Transform parent)
+    {
+        if (_root != null)
+            Destroy(_root.gameObject);
+
+        _root = new GameObject("WorldObjects").transform;
+        _root.SetParent(parent, false);
+    }
+
+    private static float Range(System.Random rng, float min, float max)
+        => min + (float)rng.NextDouble() * (max - min);
 }
