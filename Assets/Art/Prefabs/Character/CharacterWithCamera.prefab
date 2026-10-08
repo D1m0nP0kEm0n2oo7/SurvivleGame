@@ -220,7 +220,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 7585638017544821576}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1baa1ffb3e721414b9852d27352d5b2e, type: 3}
+  m_Script: {fileID: 11500000, guid: 3dd13fec77bf6d44b9ea08945c1e1ec6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Character
   _characterArmature: {fileID: 8253429161794719602}
